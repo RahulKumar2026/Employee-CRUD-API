@@ -55,12 +55,6 @@ namespace Employee_CRUD_API.Controllers
             try 
             {
                 var file = await _generatePdfReport.GeneratePdfReportAsync();
-
-                if (file == null)
-                {
-                    return NotFound();
-                }
-
                 return File(file, "application/pdf", "EmployeeReport.pdf");
             }
             catch (Exception ex) 

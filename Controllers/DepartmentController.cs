@@ -45,7 +45,7 @@ namespace Employee_CRUD_API.Controllers
                 throw;
             }
         }
-        [HttpPost]
+        [HttpPost("addDep")]
         public async Task<IActionResult> AddAsync([FromBody] List<DepartmentCreateDto> request) 
         {
             try
@@ -60,7 +60,7 @@ namespace Employee_CRUD_API.Controllers
                 throw;
             }
         }
-        [HttpPut]
+        [HttpPut("UpdateDep")]
         public async Task<IActionResult> UpdateAsync([FromQuery] int id, [FromBody] DepartmentUpdateDto request)
         {
             try
@@ -75,7 +75,7 @@ namespace Employee_CRUD_API.Controllers
                 throw;
             }
         }
-        [HttpDelete]
+        [HttpDelete("DeleteDep")]
         public async Task<IActionResult> DeleteAsync([FromQuery] int id) 
         {
             try
