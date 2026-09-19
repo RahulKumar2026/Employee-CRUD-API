@@ -1,20 +1,25 @@
 ﻿using Employee_CRUD_API.DTOs;
+using Employee_CRUD_API.Helper;
 using Employee_CRUD_API.Models;
-using Employee_CRUD_API.Repository;
 using Employee_CRUD_API.Repository.DTOs;
 using Employee_CRUD_API.Repository.Interface;
 using Employee_CRUD_API.Service.Interface;
-using System.IO.Pipelines;
-using System.Linq.Expressions;
+using Microsoft.AspNetCore.Mvc;
 namespace Employee_CRUD_API.Service
 {
     public class EmployeeService : IEmployeeService
     {
         private readonly IEmployeeRepository _employeeRepository;
         private readonly ILogger<EmployeeService> _logger;
-        public EmployeeService(IEmployeeRepository employeeRepository, ILogger<EmployeeService> logger) 
+        private readonly ISalaryCalculateService _salaryCalculateService;
+        private readonly ISalaryUpdateService _salaryUpdateService;
+        private Sorting _sort;
+        public EmployeeService(IEmployeeRepository employeeRepository, ILogger<EmployeeService> logger, ISalaryCalculateService salaryCalcukateService, ISalaryUpdateService salaryUpdateService, Sorting sort ) 
         {
             _employeeRepository = employeeRepository;
+            _salaryCalculateService = salaryCalcukateService;
+            _salaryUpdateService = salaryUpdateService;
+            _sort = sort;
             _logger = logger;
         }
         public async Task<List<EmployeeResponseDto>> GetAllAsync(PaginationDto pagination)
@@ -23,7 +28,7 @@ namespace Employee_CRUD_API.Service
             {
                 _logger.LogInformation("Calling repostiory Layer");
                 //calling repository layer
-                var result = await _employeeRepository.GetAllAsync(pagination);
+                var result = await _employeeRepository.GetAllAsync();
 
                 //vaildation
                 if (result == null || !result.Any())
@@ -31,20 +36,42 @@ namespace Employee_CRUD_API.Service
                     _logger.LogInformation("Employee data not found. Code: {Code}", HTTPResponseWrapper.Constants.NoDetailsFoundCode);
                     return new List<EmployeeResponseDto>();
                 }
+                // Search
+                if (pagination != null && !string.IsNullOrWhiteSpace(pagination.searchItem))
+                {
+                    var searchItem = pagination.searchItem.Trim();
+                    result = result.Where(x =>x.EmployeeName.Contains(searchItem,StringComparison.OrdinalIgnoreCase) ||
+                                          x.EmployeeId.ToString().Contains(searchItem) ||
+                                          x.Salary.ToString().Contains(searchItem)).ToList();
+                }
 
+                // Sorting
+                if (pagination != null)
+                {
+                    result = _sort.SortListing(result,pagination.SortColumn,pagination.SortDirection);
+                }
 
-                //DTO Mapping
-                _logger.LogInformation("DTO Mapping");
-                var response =  result.Select(e => new EmployeeResponseDto
+                // Pagination
+                if (pagination != null)
+                {
+                    result = result
+                        .Skip((pagination.PageNumber - 1) * pagination.pageSize)
+                        .Take(pagination.pageSize)
+                        .ToList();
+                }
+
+                // Entity → DTO
+                var response = result.Select(e => new EmployeeResponseDto
                 {
                     EmployeeId = e.EmployeeId,
                     EmployeeName = e.EmployeeName,
-                    Salary = e.Salary,
+                    DepartmentId = e.DepartmentId,
+                    Salary = _salaryCalculateService.CalculateSalary(e),
                     Created = e.Created
                 }).ToList();
 
+                _logger.LogInformation("Service layer returning result");
 
-                _logger.LogInformation("Service Layer returing result");
                 return response;
 
 
@@ -59,6 +86,14 @@ namespace Employee_CRUD_API.Service
         {
             try
             {
+                //vaildation
+                if (id <= 0) 
+                {
+                    _logger.LogInformation("Employee data not found. Code: {Code}", HTTPResponseWrapper.Constants.BadRequestCode);
+                    return null;
+                }
+
+
                 _logger.LogInformation("Calling Repository Layer");
                 //calling Repository service
                 var result = await _employeeRepository.GetByIdAsync(id);
@@ -71,12 +106,16 @@ namespace Employee_CRUD_API.Service
                     return null;
                 }
 
+                // Salary business logic
+                var calculatedSalary = _salaryCalculateService.CalculateSalary(result);
+
                 //maping to dto
                 var response = new EmployeeResponseDto
                 {
                     EmployeeId = result.EmployeeId,
                     EmployeeName = result.EmployeeName,
-                    Salary = result.Salary,
+                    Salary = calculatedSalary,
+                    DepartmentId = result.DepartmentId,
                     Created = result.Created
 
                 };
@@ -89,7 +128,7 @@ namespace Employee_CRUD_API.Service
                 throw;
             }
         }
-        public async Task<List<EmployeeResponseDto>> AddAsyncList(List<EmployeeRequestDto> request)
+        public async Task<List<EmployeeResponseDto>> AddAsyncList(List<EmployeeCreateDto> request)
         {
             try
             {
@@ -100,12 +139,13 @@ namespace Employee_CRUD_API.Service
 
                     return new List<EmployeeResponseDto>();
                 }
+
                 //mapping dto to entity
                 var entity = request.Select(e => new Employee 
                 {
                      EmployeeName = e.EmployeeName,
                      DepartmentId = e.DepartmentId,
-                     Salary = e.Salary,
+                     Salary = _salaryUpdateService.CalculateSalary(e),
                      Created = DateTime.Now,
                 }).ToList();
 
@@ -135,7 +175,7 @@ namespace Employee_CRUD_API.Service
                 throw;
             }
         }
-        public async Task<EmployeeResponseDto> UpdateAsync(int id, EmployeeRequestDto request) 
+        public async Task<EmployeeResponseDto> UpdateAsync(int id, EmployeeUpdateDto request) 
         {
             try
             {
@@ -147,13 +187,16 @@ namespace Employee_CRUD_API.Service
                     return new EmployeeResponseDto();
                 }
 
+                // Salary business logic
+                var salary = _salaryUpdateService.CalculateSalary(request);
+
                 // Mapping DTO to Entity
                 var entity = new Employee
                 {
                     EmployeeId = id,
                     EmployeeName = request.EmployeeName,
                     DepartmentId = request.DepartmentId,
-                    Salary = request.Salary
+                    Salary = salary
                 };
 
                 // Calling Repository Layer
@@ -172,7 +215,7 @@ namespace Employee_CRUD_API.Service
                 {
                     EmployeeId = entity.EmployeeId,
                     EmployeeName = entity.EmployeeName,
-                    Salary = entity.Salary,
+                    Salary = salary,
                     Created = entity.Created
                 };
 

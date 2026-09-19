@@ -1,10 +1,10 @@
-﻿using Employee_CRUD_API.Models;
+﻿using Employee_CRUD_API.DTOs;
 
 namespace Employee_CRUD_API.Helper
 {
     public class Sorting
     {
-        public IQueryable<Employee> SortListing(IQueryable<Employee> data, string sortColumn, string sortDirection)
+        public List<EmployeeResponseDto> SortListing(List<EmployeeResponseDto> data, string sortColumn, string sortDirection)
         {
             string sortBy = sortColumn?.Trim().ToLower() ?? "employeeid";
             bool isAsc = sortDirection?.Trim().ToLower() == "asc";
@@ -13,24 +13,24 @@ namespace Employee_CRUD_API.Helper
             {
                 case "employeeid":
                     return isAsc
-                        ? data.OrderBy(x => x.EmployeeId)
-                        : data.OrderByDescending(x => x.EmployeeId);
+                        ? data.OrderBy(x => x.EmployeeId).ToList()
+                        : data.OrderByDescending(x => x.EmployeeId).ToList();
                 case "employeename":
                     return isAsc
-                        ? data.OrderBy(x => x.EmployeeName)
-                        : data.OrderByDescending(x => x.EmployeeName);
+                        ? data.OrderBy(x => x.EmployeeName).ToList()
+                        : data.OrderByDescending(x => x.EmployeeName).ToList();
                 case "salary":
                     return isAsc
-                        ? data.OrderBy(x => x.Salary)
-                        : data.OrderByDescending(x => x.Salary);
+                        ? data.OrderBy(x => x.Salary).ToList()
+                        : data.OrderByDescending(x => x.Salary).ToList();
                 case "created":
                     return isAsc
-                        ? data.OrderBy(x => x.Created)
-                        : data.OrderByDescending(x => x.Created);
+                        ? data.OrderBy(x => x.Created).ToList()
+                        : data.OrderByDescending(x => x.Created).ToList();
                 default:
                     return isAsc
-                        ? data.OrderBy(x => x.EmployeeId)
-                        : data.OrderByDescending(x => x.EmployeeId);
+                        ? data.OrderBy(x => x.EmployeeId).ToList()
+                        : data.OrderByDescending(x => x.EmployeeId).ToList();
             }
         }
     }

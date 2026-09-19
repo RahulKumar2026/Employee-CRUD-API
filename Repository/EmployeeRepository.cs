@@ -5,6 +5,7 @@ using Employee_CRUD_API.Models;
 using Employee_CRUD_API.Repository.DTOs;
 using Employee_CRUD_API.Repository.Interface;
 using Microsoft.EntityFrameworkCore;
+using System.Runtime.Intrinsics.Arm;
 
 namespace Employee_CRUD_API.Repository
 {
@@ -20,38 +21,27 @@ namespace Employee_CRUD_API.Repository
             _dbcontext = dbcontext;
             _sorting = sorting;
         }
-        public async Task<List<Employee>> GetAllAsync(PaginationDto pagination) 
+        public async Task<List<EmployeeResponseDto>> GetAllAsync() 
         {
             try
             {
                 _logger.LogInformation("Repository is accessing data from database");
-                var query = _dbcontext.Employees.AsNoTracking();
-                
-
-                if (!string.IsNullOrWhiteSpace(pagination.searchItem))
-                {
-                    var searchItem = pagination.searchItem.Trim();
-
-                    query = query.Where(x =>
-                        EF.Functions.ILike(x.EmployeeName!, $"%{searchItem}%") ||
-                        EF.Functions.ILike(x.EmployeeId.ToString(), $"%{searchItem}%") ||
-                        EF.Functions.ILike(x.Salary.ToString(), $"%{searchItem}%") ||
-                        EF.Functions.ILike(x.Created.ToString(), $"%{searchItem}%")
-                    );
-                }
-
-                // Sorting
-                query = _sorting.SortListing(query, pagination.SortColumn, pagination.SortDirection);
-
-
-                //Pagination
-                var result = await query
-                    .Skip((pagination.PageNumber - 1) * pagination.pageSize)
-                    .Take(pagination.pageSize)
-                    .ToListAsync();
+                var query = await (from em in _dbcontext.Employees.AsNoTracking()
+                                    join dp in _dbcontext.Departments.AsNoTracking() on em.DepartmentId equals dp.DepartmentId
+                                    into departmentGroup
+                                    from dn in departmentGroup.DefaultIfEmpty()
+                                    select new EmployeeResponseDto
+                                    {
+                                        EmployeeId = em.EmployeeId,
+                                        EmployeeName = em.EmployeeName,
+                                        Salary = em.Salary,
+                                        Created = em.Created,
+                                        DepartmentId = em.DepartmentId,
+                                        DepartmentName = dn != null ? dn.DepartmentName : null
+                                    }).ToListAsync();
 
                 _logger.LogInformation("Pagination done!");
-                return result;
+                return query;
             }
             catch (Exception)
             {
@@ -59,13 +49,27 @@ namespace Employee_CRUD_API.Repository
                 throw;
             }
         }
-        public async Task<Employee?> GetByIdAsync(int id) 
+        public async Task<EmployeeResponseDto?> GetByIdAsync(int id) 
         {
             try
             {
                 _logger.LogInformation("Repository is accessing data from database");
-                var employee = await _dbcontext.Employees.AsNoTracking()
-                    .FirstOrDefaultAsync(e => e.EmployeeId == id);
+                var employee = await (from em in _dbcontext.Employees.AsNoTracking().Where(e => e.EmployeeId == id)
+                                      join dp in _dbcontext.Departments.AsNoTracking()
+                                      on em.DepartmentId equals dp.DepartmentId
+                                      into departmentGroup
+                                      from dn in departmentGroup.DefaultIfEmpty()
+                                      select new EmployeeResponseDto
+                                      {
+                                          EmployeeId = em.EmployeeId,
+                                          EmployeeName = em.EmployeeName,
+                                          Salary = em.Salary,
+                                          Created = em.Created,
+                                          DepartmentId = em.DepartmentId,
+                                          DepartmentName = dn != null ? dn.DepartmentName : null
+                                      }).FirstOrDefaultAsync();
+
+
 
                 return employee;
 
@@ -95,15 +99,8 @@ namespace Employee_CRUD_API.Repository
         {
             try
             {
-                if (request == null)
-                {
-                    _logger.LogInformation( "Employee data not found. Code: {Code}",HTTPResponseWrapper.Constants.NoDetailsFoundCode);
-
-                    return false;
-                }
-
+                _logger.LogInformation("Repository is accessing data from database");
                 _dbcontext.Employees.UpdateRange(request);
-
                 await _dbcontext.SaveChangesAsync();
 
                 return true;
@@ -118,6 +115,7 @@ namespace Employee_CRUD_API.Repository
         {
             try
             {
+                _logger.LogInformation("Repository is accessing data from database");
                 var employee = await _dbcontext.Employees.FirstOrDefaultAsync(e => e.EmployeeId == id);
                 if (employee == null)
                 {

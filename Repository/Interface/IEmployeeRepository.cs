@@ -5,8 +5,8 @@ namespace Employee_CRUD_API.Repository.Interface
 {
     public interface IEmployeeRepository
     {
-        Task<List<Employee>> GetAllAsync(PaginationDto pagination);
-        Task<Employee?> GetByIdAsync(int id);
+        Task<List<EmployeeResponseDto>> GetAllAsync();
+        Task<EmployeeResponseDto?> GetByIdAsync(int id);
         Task<bool> AddAsync(List<Employee> request);
         Task<bool> UpdateAsync(Employee request);
         Task<bool> DeleteAsync(int id);

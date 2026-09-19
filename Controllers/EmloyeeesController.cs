@@ -21,7 +21,7 @@ namespace Employee_CRUD_API.Controllers
             _employeeService = employeeService;
         }
         [HttpGet("GetAllEmp")]
-        public async Task<IActionResult> GetAllAsync([FromQuery] PaginationDto pagination)
+        public async Task<IActionResult> GetAllAsync([FromQuery] PaginationDto? pagination)
         {
             try
             {
@@ -53,7 +53,7 @@ namespace Employee_CRUD_API.Controllers
             }
         }
         [HttpPost("addEmp")]
-        public async Task<IActionResult> AddAsyncList([FromBody]List<EmployeeRequestDto> request)
+        public async Task<IActionResult> AddAsyncList([FromBody]List<EmployeeCreateDto> request)
         {
             try 
             {
@@ -70,7 +70,7 @@ namespace Employee_CRUD_API.Controllers
         }
 
         [HttpPut("UpdateEmp")]
-        public async Task<IActionResult> UpdateAsync([FromQuery] int id, [FromBody] EmployeeRequestDto request) 
+        public async Task<IActionResult> UpdateAsync([FromQuery] int id, [FromBody] EmployeeUpdateDto request) 
         {
             try
             {
