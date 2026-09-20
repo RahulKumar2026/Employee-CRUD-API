@@ -1,12 +1,14 @@
 ﻿using Employee_CRUD_API.Enums;
 using Employee_CRUD_API.Service;
 using Employee_CRUD_API.Service.Interface;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Employee_CRUD_API.Controllers
 {
     [ApiController]
     [Route("api/repot")]
+    [Authorize]
     public class ReportController : ControllerBase
     {
         private readonly ILogger<ReportController> _logger;

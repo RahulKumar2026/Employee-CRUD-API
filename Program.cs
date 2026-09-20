@@ -8,23 +8,23 @@ using Employee_CRUD_API.Service.Interface;
 using Employee_CRUD_API.Settings;
 using Microsoft.EntityFrameworkCore;
 using QuestPDF.Infrastructure;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using Serilog;
 
 //Logger 
-
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
-    .WriteTo.File(
-        "logs/employee-api-.log",
-        rollingInterval: RollingInterval.Day)
-    .CreateLogger();
+    .WriteTo.File("logs/employee-api-.log", rollingInterval: RollingInterval.Day).CreateLogger();
 
 var builder = WebApplication.CreateBuilder(args);
 
-var smtpSettings = builder.Configuration
-    .GetSection("SmtpSettings")
-    .Get<SmtpSettings>();
+//smtp Congiguration
+var smtpSettings = builder.Configuration.GetSection("SmtpSettings").Get<SmtpSettings>();
 
+//JWT Congiruation
+var jwtSettings = builder.Configuration .GetSection("JwtSettings").Get<JwtSettings>();
 
 // QuestPDF license
 QuestPDF.Settings.License = LicenseType.Community;
@@ -56,12 +56,36 @@ builder.Services.AddScoped<INotificationService,NotificationService>();
 builder.Services.AddScoped<INotificationProvider, WhatsAppNotificationProvider>();
 builder.Services.AddScoped<INotificationProvider,EmailNotificationProvider>();
 builder.Services.AddScoped< IEmployeeReportEmailService,EmployeeReportEmailService>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddSingleton(smtpSettings!);
+builder.Services.AddSingleton(jwtSettings!);
 
 // Add services to the container
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
+{
+    options.TokenValidationParameters =
+        new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+
+            ValidIssuer = jwtSettings!.Issuer,
+            ValidAudience = jwtSettings.Audience,
+
+            IssuerSigningKey =
+                new SymmetricSecurityKey(
+                    Encoding.UTF8.GetBytes(
+                        jwtSettings.SecretKey))
+        };
+ });
 
 var app = builder.Build();
 
@@ -79,6 +103,7 @@ app.UseSerilogRequestLogging();
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
