@@ -5,6 +5,7 @@ using Employee_CRUD_API.Repository;
 using Employee_CRUD_API.Repository.Interface;
 using Employee_CRUD_API.Service;
 using Employee_CRUD_API.Service.Interface;
+using Employee_CRUD_API.Settings;
 using Microsoft.EntityFrameworkCore;
 using QuestPDF.Infrastructure;
 using Serilog;
@@ -19,6 +20,11 @@ Log.Logger = new LoggerConfiguration()
     .CreateLogger();
 
 var builder = WebApplication.CreateBuilder(args);
+
+var smtpSettings = builder.Configuration
+    .GetSection("SmtpSettings")
+    .Get<SmtpSettings>();
+
 
 // QuestPDF license
 QuestPDF.Settings.License = LicenseType.Community;
@@ -49,6 +55,8 @@ builder.Services.AddScoped<IGeneratePdfReport, GeneratePdfReport>();
 builder.Services.AddScoped<INotificationService,NotificationService>();
 builder.Services.AddScoped<INotificationProvider, WhatsAppNotificationProvider>();
 builder.Services.AddScoped<INotificationProvider,EmailNotificationProvider>();
+builder.Services.AddScoped< IEmployeeReportEmailService,EmployeeReportEmailService>();
+builder.Services.AddSingleton(smtpSettings!);
 
 // Add services to the container
 builder.Services.AddControllers();

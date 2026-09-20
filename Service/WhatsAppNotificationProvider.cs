@@ -1,4 +1,5 @@
-﻿using Employee_CRUD_API.Enums;
+﻿using Employee_CRUD_API.DTOs;
+using Employee_CRUD_API.Enums;
 using Employee_CRUD_API.Service.Interface;
 
 namespace Employee_CRUD_API.Service
@@ -12,7 +13,7 @@ namespace Employee_CRUD_API.Service
             _logger = logger;
         }
         public NotificationType Type => NotificationType.WhatsApp;
-        public async Task SendAsync(string recipient,string subject,string message)
+        public async Task SendAsync(string recipient,string subject,string message, List<EmailAttachmentDto>? attachments = null)
         {
             try
             {

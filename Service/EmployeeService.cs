@@ -16,12 +16,12 @@ namespace Employee_CRUD_API.Service
         private readonly ISalaryUpdateService _salaryUpdateService;
         private readonly INotificationService _notificationService;
         private Sorting _sort;
-        public EmployeeService(IEmployeeRepository employeeRepository, ILogger<EmployeeService> logger, ISalaryCalculateService salaryCalcukateService, ISalaryUpdateService salaryUpdateService, Sorting sort, INotificationService notificationService) 
+        public EmployeeService(IEmployeeRepository employeeRepository, ILogger<EmployeeService> logger, ISalaryCalculateService salaryCalcukateService, ISalaryUpdateService salaryUpdateService, INotificationService notificationService, Sorting sort ) 
         {
             _employeeRepository = employeeRepository;
             _salaryCalculateService = salaryCalcukateService;
-            _salaryUpdateService = salaryUpdateService;
             _notificationService = notificationService;
+            _salaryUpdateService = salaryUpdateService;
             _sort = sort;
             _logger = logger;
         }
@@ -160,9 +160,12 @@ namespace Employee_CRUD_API.Service
                 {
                     return new List<EmployeeResponseDto>();
                 }
-                await _notificationService.SendAsync(NotificationType.Email,"rahul@example.com", "Employee Created","Employee records were created successfully.");
-                await _notificationService.SendAsync(NotificationType.WhatsApp,"919876543210","Employee Created","Employee Rahul Kumar was created successfully.");
-                // Mapping Entity to Response DTO
+
+
+                // Notification
+                //await _notificationService.SendAsync(NotificationType.Email,"rahu.kumar@binmile.com","Employee Created","Employee records were created successfully.");
+                //await _notificationService.SendAsync(NotificationType.Whatsaap,"rahu.kumar@binmile.com","Employee Created","Employee records were created successfully.");
+                //_logger.LogInformation("Notification sended Successfully");
                 var response = entity.Select(e => new EmployeeResponseDto
                 {
                     EmployeeId = e.EmployeeId,

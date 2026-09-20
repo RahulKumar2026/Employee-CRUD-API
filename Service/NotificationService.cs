@@ -1,4 +1,5 @@
-﻿using Employee_CRUD_API.Enums;
+﻿using Employee_CRUD_API.DTOs;
+using Employee_CRUD_API.Enums;
 using Employee_CRUD_API.Service.Interface;
 
 namespace Employee_CRUD_API.Service
@@ -14,7 +15,7 @@ namespace Employee_CRUD_API.Service
             _providers = providers;
         }
 
-        public async Task SendAsync(NotificationType notificationType,string recipient,string subject,string message)
+        public async Task SendAsync(NotificationType notificationType,string recipient,string subject,string message, List<EmailAttachmentDto>? attachments = null)
         {
             try
             {
@@ -28,9 +29,9 @@ namespace Employee_CRUD_API.Service
                     throw new InvalidOperationException($"Notification provider not found for {notificationType}");
                 }
 
-                _logger.LogInformation("Sending {NotificationType} notification",notificationType);
+                _logger.LogInformation("Sending {NotificationType} notification", notificationType);
 
-                await provider.SendAsync(recipient,subject,message);
+                await provider.SendAsync(recipient,subject,message, attachments);
             }
             catch (Exception ex)
             {

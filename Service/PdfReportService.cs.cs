@@ -74,9 +74,7 @@ namespace Employee_CRUD_API.Service
             }
             catch (Exception ex)
             {
-                _logger.LogError(
-                    ex,
-                    "Error while generating PDF employee report");
+                _logger.LogError(ex, "Error while generating PDF employee report");
 
                 throw;
             }
