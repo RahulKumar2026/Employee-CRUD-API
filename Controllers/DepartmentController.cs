@@ -30,8 +30,8 @@ namespace Employee_CRUD_API.Controllers
                 throw;
             }
         }
-        [HttpGet("GetDepById")]
-        public async Task<IActionResult> GetByIdAsync([FromQuery] int id) 
+        [HttpGet("GetDepById/{id}")]
+        public async Task<IActionResult> GetByIdAsync([FromRoute] int id) 
         {
             try
             {
@@ -60,8 +60,8 @@ namespace Employee_CRUD_API.Controllers
                 throw;
             }
         }
-        [HttpPut("UpdateDep")]
-        public async Task<IActionResult> UpdateAsync([FromQuery] int id, [FromBody] DepartmentUpdateDto request)
+        [HttpPut("UpdateDep/{id}")]
+        public async Task<IActionResult> UpdateAsync([FromRoute] int id, [FromBody] DepartmentUpdateDto request)
         {
             try
             {
@@ -75,8 +75,8 @@ namespace Employee_CRUD_API.Controllers
                 throw;
             }
         }
-        [HttpDelete("DeleteDep")]
-        public async Task<IActionResult> DeleteAsync([FromQuery] int id) 
+        [HttpDelete("DeleteDep/{id}")]
+        public async Task<IActionResult> DeleteAsync([FromRoute] int id) 
         {
             try
             {

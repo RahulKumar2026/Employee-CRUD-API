@@ -1,4 +1,5 @@
 ﻿using Employee_CRUD_API.DTOs;
+using Employee_CRUD_API.Enums;
 using Employee_CRUD_API.Helper;
 using Employee_CRUD_API.Models;
 using Employee_CRUD_API.Repository.DTOs;
@@ -13,12 +14,14 @@ namespace Employee_CRUD_API.Service
         private readonly ILogger<EmployeeService> _logger;
         private readonly ISalaryCalculateService _salaryCalculateService;
         private readonly ISalaryUpdateService _salaryUpdateService;
+        private readonly INotificationService _notificationService;
         private Sorting _sort;
-        public EmployeeService(IEmployeeRepository employeeRepository, ILogger<EmployeeService> logger, ISalaryCalculateService salaryCalcukateService, ISalaryUpdateService salaryUpdateService, Sorting sort ) 
+        public EmployeeService(IEmployeeRepository employeeRepository, ILogger<EmployeeService> logger, ISalaryCalculateService salaryCalcukateService, ISalaryUpdateService salaryUpdateService, Sorting sort, INotificationService notificationService) 
         {
             _employeeRepository = employeeRepository;
             _salaryCalculateService = salaryCalcukateService;
             _salaryUpdateService = salaryUpdateService;
+            _notificationService = notificationService;
             _sort = sort;
             _logger = logger;
         }
@@ -157,7 +160,8 @@ namespace Employee_CRUD_API.Service
                 {
                     return new List<EmployeeResponseDto>();
                 }
-           
+                await _notificationService.SendAsync(NotificationType.Email,"rahul@example.com", "Employee Created","Employee records were created successfully.");
+                await _notificationService.SendAsync(NotificationType.WhatsApp,"919876543210","Employee Created","Employee Rahul Kumar was created successfully.");
                 // Mapping Entity to Response DTO
                 var response = entity.Select(e => new EmployeeResponseDto
                 {

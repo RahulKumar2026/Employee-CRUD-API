@@ -10,14 +10,12 @@ namespace Employee_CRUD_API.Controllers
     [Route("api/employee")]
     public class EmloyeeesController : ControllerBase
     {
-        private readonly AppDbContext _dbcontext;
         private readonly ILogger<EmloyeeesController> _logger;
         private readonly IEmployeeService _employeeService;
 
-        public EmloyeeesController(ILogger<EmloyeeesController> logger, AppDbContext dbcontext, IEmployeeService employeeService)
+        public EmloyeeesController(ILogger<EmloyeeesController> logger, IEmployeeService employeeService)
         {
             _logger = logger;
-            _dbcontext = dbcontext;
             _employeeService = employeeService;
         }
         [HttpGet("GetAllEmp")]
@@ -36,8 +34,8 @@ namespace Employee_CRUD_API.Controllers
                 throw;
             }
         }
-        [HttpGet("GetEmpById")]
-        public async Task<IActionResult> GetByIdAsync([FromQuery]int id) 
+        [HttpGet("GetEmpById/{id}")]
+        public async Task<IActionResult> GetByIdAsync([FromRoute] int id) 
         {
             try
             {
@@ -69,8 +67,8 @@ namespace Employee_CRUD_API.Controllers
             }
         }
 
-        [HttpPut("UpdateEmp")]
-        public async Task<IActionResult> UpdateAsync([FromQuery] int id, [FromBody] EmployeeUpdateDto request) 
+        [HttpPut("UpdateEmp/{id}")]
+        public async Task<IActionResult> UpdateAsync([FromRoute] int id, [FromBody] EmployeeUpdateDto request) 
         {
             try
             {
@@ -86,8 +84,8 @@ namespace Employee_CRUD_API.Controllers
             }
         }
         
-        [HttpDelete("DeleteEmpById")]
-        public async Task<IActionResult> DelteAsync([FromQuery] int id) 
+        [HttpDelete("DeleteEmpById/{id}")]
+        public async Task<IActionResult> DeleteAsync([FromRoute] int id) 
         {
             try
             {

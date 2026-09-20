@@ -1,5 +1,4 @@
 ﻿using Employee_CRUD_API.DTOs;
-using Employee_CRUD_API.Models;
 using Employee_CRUD_API.Repository.Interface;
 using Employee_CRUD_API.Service.Interface;
 

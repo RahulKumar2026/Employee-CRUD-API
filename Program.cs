@@ -46,6 +46,10 @@ builder.Services.AddScoped<IExcelReportService, ExcelReportService>();
 builder.Services.AddScoped<IGenerateExcelReport, GenerateExcelReport>();
 builder.Services.AddScoped<IPdfReportService, PdfReportService>();
 builder.Services.AddScoped<IGeneratePdfReport, GeneratePdfReport>();
+builder.Services.AddScoped<INotificationService,NotificationService>();
+builder.Services.AddScoped<INotificationProvider, WhatsAppNotificationProvider>();
+builder.Services.AddScoped<INotificationProvider,EmailNotificationProvider>();
+
 // Add services to the container
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
